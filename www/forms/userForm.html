@@ -1,0 +1,49 @@
+<div class="list">
+   <label class="item item-input">
+      <span class="input-label">Nombre</span>
+      <input type="text" ng-model="$parent.user.name" placeholder="Name">
+  </label>
+
+
+
+  <label class="item item-input">
+      <span class="input-label">Días</span>
+      <input type="text" ng-readonly="true" ng-model="$parent.user.days" ng-click="openDaysForm($parent.user)">
+      <button class="button icon-left ion-chevron-right button-clear button-dark" ng-click="openDaysForm($parent.user)"> </button>
+      <input type="hidden" ng-model="$parent.user.dayscodes">
+  </label>
+
+
+  <label class="item item-input">
+      <span class="input-label">Horas</span>
+      <input type="text" ng-readonly="true" ng-model="$parent.user.hours" ng-click="openHoursForm($parent.user.hours)">
+      <button class="button icon-left ion-chevron-right button-clear button-dark" ng-click="openHoursForm($parent.user.hours)"> </button>
+  </label>
+
+
+  <label class="item item-input">
+    <span class="input-label">Fecha inicio</span>
+    <input type="date" id="date_ini" name="date_ini" ng-model="$parent.user.date_ini"> </input>
+  </label>
+
+  <label class="item item-input">
+    <span class="input-label">Fecha fin</span>
+    <input type="date" id="date_fin" name="date_end" ng-model="$parent.user.date_end"> <button class="button icon-left ion-chevron-right button-clear button-dark"> </button></input>
+  </label>
+
+
+
+  <label class="item item-input item-select">
+      <div class="input-label">
+        Medicamento
+      </div>
+      <select>
+        <option selected>Uno</option>
+        <option >Dos</option>
+        <option>Tres</option>
+      </select>
+  </label>
+
+
+  </label>
+</div>
