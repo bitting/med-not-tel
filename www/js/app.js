@@ -28,12 +28,13 @@ angular.module('med', ['ionic','ngCordova', 'med.controllers', 'med.services', '
           db = window.openDatabase("med.db", "1.0", "Med", -1);
       }
 
-      $cordovaSQLite.execute(db, "DROP TABLE users");
+      $cordovaSQLite.execute(db, "DROP TABLE med");
+      $cordovaSQLite.execute(db, "DROP TABLE tomas");
       //$cordovaSQLite.execute(db, "CREATE TABLE IF NOT EXISTS users (id integer primary key, name text)");
       //$cordovaSQLite.execute(db, "CREATE TABLE IF NOT EXISTS users (id integer primary key, name text, days text)");
-      $cordovaSQLite.execute(db, "CREATE TABLE IF NOT EXISTS med (id integer primary key, name text, days text, date_ini date, date_end)");
+      $cordovaSQLite.execute(db, "CREATE TABLE IF NOT EXISTS med (id integer primary key, name text, days text, date_ini datetime, date_end datetime, alarm INTEGER DEFAULT 0)");
       $cordovaSQLite.execute(db, "CREATE TABLE IF NOT EXISTS hours (id integer primary key, med_id integer, hour text)");
-      $cordovaSQLite.execute(db, "CREATE TABLE IF NOT EXISTS tomas (id integer primary key, med_id integer, date date)");
+      $cordovaSQLite.execute(db, "CREATE TABLE IF NOT EXISTS tomas (id integer primary key, med_id integer, med_name text, date date, tomada INTEGER DEFAULT 0)");
 
   });
 })
@@ -63,8 +64,17 @@ angular.module('med', ['ionic','ngCordova', 'med.controllers', 'med.services', '
       templateUrl: "templates/edit.html",
       controller: "usersCtrl"
     })
-
+    .state("tomas",{
+      url: "/tomas",
+      templateUrl: "templates/tomas.html",
+      controller: "tomasCtrl"
+    })
 
     $urlRouterProvider.otherwise("/users");
+
+
+
+
+
 
 })

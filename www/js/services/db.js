@@ -45,7 +45,7 @@ angular.module("med.services", [])
   var self = this;
 
   self.all = function() {
-    return DBA.query("SELECT id, name, days, date_ini, date_end FROM med")
+    return DBA.query("SELECT id, name, days, date_ini, date_end, alarm FROM med")
     .then(function(result){
       return DBA.getAll(result);
     });
@@ -53,15 +53,19 @@ angular.module("med.services", [])
 
   self.get = function(medId) {
     var parameters = [medId];
-    return DBA.query("SELECT id, name, days, date_ini, date_end FROM med WHERE id = (?)", parameters)
+
+    return DBA.query("SELECT id, name, days, date_ini, date_end, alarm FROM med WHERE id = (?)", parameters)
+    //return DBA.query("SELECT id, name, days, date_ini, date_end FROM med WHERE id = (?)", parameters)
     .then(function(result) {
       return DBA.getById(result);
     });
   }
 
   self.add = function(med) {
-    var parameters = [med.name, med.days, med.date_ini, med.date_end];
-    return DBA.query("INSERT INTO med (name, days, date_ini, date_end) VALUES (?, ?, ?, ?)", parameters);
+    var parameters = [med.name, med.days, med.date_ini, med.date_end, med.alarm];
+
+    //return DBA.query("INSERT INTO med (name, days, date_ini, date_end) VALUES (?, ?, strftime('$s', ?), strftime('$s', ?))", parameters);
+    return DBA.query("INSERT INTO med (name, days, date_ini, date_end, alarm) VALUES (?, ?, ?, ?, ?)", parameters);
   }
 
 
@@ -71,8 +75,8 @@ angular.module("med.services", [])
   }
 
   self.update = function(editMed) {
-    var parameters = [editMed.name, editMed.days, editMed.date_ini, editMed.date_end, editMed.id];
-    return DBA.query("UPDATE med SET name = (?), days = (?), date_ini = (?), date_end = (?) WHERE id = (?)", parameters);
+    var parameters = [editMed.name, editMed.days, editMed.date_ini, editMed.date_end, editMed.alarm, editMed.id];
+    return DBA.query("UPDATE med SET name = (?), days = (?), date_ini = (?), date_end = (?), alarm = (?) WHERE id = (?)", parameters);
   }
 
   return self;
@@ -129,7 +133,7 @@ angular.module("med.services", [])
   var self = this;
 
   self.all = function() {
-    return DBA.query("SELECT id, med_id, date FROM tomas")
+    return DBA.query("SELECT id, med_id, med_name, date, tomada FROM tomas ORDER BY date ASC ")
     .then(function(result){
       return DBA.getAll(result);
     });
@@ -137,32 +141,36 @@ angular.module("med.services", [])
 
   self.getByMed = function(medId) {
     var parameters = [medId];
-    return DBA.query("SELECT id, med_id, date FROM tomas WHERE med_id = (?)", parameters)
+    return DBA.query("SELECT id, med_id, dmed_name, date, tomada FROM tomas WHERE med_id = (?)", parameters)
     .then(function(result) {
       return DBA.getAll(result);
     });
   }
 
+/*
+  Fecha hoy con 00:00:00
+  Buscar fecha entre fecha de hoy y fecha +1
   self.getByDay = function(date) {
     var parameters = [date];
-    return DBA.query("SELECT id, med_id, date FROM tomas WHERE date = (?)", parameters)
+    return DBA.query("SELECT id, med_id, med_name, date FROM tomas WHERE date = (?)", parameters)
     .then(function(result) {
       return DBA.getAll(result);
     });
   }
+*/
 
   self.get = function(tomaId) {
     var parameters = [tomaId];
-    return DBA.query("SELECT id, med_id, hour FROM tomas WHERE id = (?)", parameters)
+    return DBA.query("SELECT id, med_id, med_name, date, tomada FROM tomas WHERE id = (?)", parameters)
     .then(function(result) {
       return DBA.getById(result);
     });
   }
 
-  self.add = function(med_id, date) {
-    var parameters = [med_id, date];
+  self.add = function(med_id, med_name, date, tomada) {
+    var parameters = [med_id, med_name, date, tomada];
     console.log("db guarda toma dia "+date);
-    return DBA.query("INSERT INTO tomas (med_id, date) VALUES (?,?)", parameters);
+    return DBA.query("INSERT INTO tomas (med_id, med_name, date, tomada) VALUES (?,?,?,?)", parameters);
   }
 
   self.remove = function(tomaId) {
@@ -171,8 +179,8 @@ angular.module("med.services", [])
   }
 
   self.update = function(editToma) {
-    var parameters = [editToma.med_id, editToma.date, editToma.id];
-    return DBA.query("UPDATE tomas SET med_id = (?), date = (?) WHERE id = (?)", parameters);
+    var parameters = [editToma.med_id, editToma.med_name, editToma.date, editToma.tomada, editToma.id];
+    return DBA.query("UPDATE tomas SET med_id = (?), med_name = (?), date = (?), tomada = (?) WHERE id = (?)", parameters);
   }
 
   return self;
