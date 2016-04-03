@@ -183,5 +183,10 @@ angular.module("med.services", [])
     return DBA.query("UPDATE tomas SET med_id = (?), med_name = (?), date = (?), tomada = (?) WHERE id = (?)", parameters);
   }
 
+  self.setTomada = function(tomaId, tomada) {
+    var parameters = [tomada, tomaId];
+    return DBA.query("UPDATE tomas SET tomada = (?) WHERE id = (?)", parameters);
+  }
+
   return self;
 })

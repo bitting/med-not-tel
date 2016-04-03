@@ -1,9 +1,8 @@
-var app = angular.module('med.controllers', ['med.services', 'ngResource', 'ngMessages'])
+var app = angular.module('med.controllers', ['med.services', 'ionic', 'ngCordova', 'ngResource', 'ngMessages'])
 
 
 
-.controller("usersCtrl", function($scope, Users, Hours, Tomas, $state, $stateParams, $window, $ionicPopup, $ionicModal, $http, $filter){
-
+.controller("usersCtrl", function($scope, Users, Hours, Tomas, $state, $stateParams, $window, $ionicPopup, $ionicModal, $http, $filter, $cordovaLocalNotification){
 
 
   /* MODAL DíaAS*/
@@ -14,12 +13,11 @@ var app = angular.module('med.controllers', ['med.services', 'ngResource', 'ngMe
       $scope.modalDays = modal;
   })
 
-
   $scope.openDaysForm = function(user){
 
       $scope.user = user;
 
-      if (angular.isDefined( $scope.user ) && angular.isDefined( $scope.user.days )) {
+      if (angular.isDefined( $scope.user ) && angular.isDefined($scope.user.days )) {
         var days = $scope.user.days;
         $scope.days =
              { "l": days.indexOf("L") > -1,
@@ -38,6 +36,7 @@ var app = angular.module('med.controllers', ['med.services', 'ngResource', 'ngMe
   $scope.closeDaysForm = function(){
       $scope.modalDays.hide();
   }
+
 
   /* MODAL LISTA HORAS*/
 
@@ -146,15 +145,39 @@ var app = angular.module('med.controllers', ['med.services', 'ngResource', 'ngMe
 
   }
 
+
+
+  $scope.initSelectMed = function(){
+
+    var cat = [
+          {
+           "id" : 1,
+           "name" : "cat 1"
+          },{
+           "id" : 2,
+           "name" : "cat 2"
+          }
+    ];
+
+    $scope.categories = cat;
+  };
+
+
+
   $scope.initAddUsers = function(){
+
+     var catId = $stateParams.catId;
+
+      //Cargar datos predefinidos del medicamento segun el Id recibido
 
 
       if(!angular.isDefined($scope.user)){
          var user = {
-            name : "",
+            //name : "",
+            name: catId,
             days : "",
             //daycodes : "",
-            hours : ["11:20","13:10"]
+            hours : ["09:08","10:08","11:08"]
           }
 
         $scope.user = user;
@@ -165,9 +188,13 @@ var app = angular.module('med.controllers', ['med.services', 'ngResource', 'ngMe
    // Guardado con formulario
     $scope.saveMed = function(form, user){
 
+
+
        if(form.$valid) {
 
-               if(!angular.isDefined(user) || user.name==""){
+         var alarm = true;
+
+               if(!angular.isDefined(user) || user.name ==""){
                       alert("No se ha especificado el nombre");
                }else if (user.date_ini.getTime() > user.date_end.getTime()) {
                       alert("La fecha de inicio no puede ser posterior a la fecha de fin");
@@ -189,10 +216,14 @@ var app = angular.module('med.controllers', ['med.services', 'ngResource', 'ngMe
 
                        //alert(JSON.stringify(user));
 
+
+
+
                         Users.add(user).then(
                             function(res){
 
                             //alert("lastId "+res.insertId);
+                             $scope.medId = res.insertId;
 
                               for(var i=0; i < user.hours.length; i++){
                                  var hora = user.hours[i];
@@ -209,6 +240,7 @@ var app = angular.module('med.controllers', ['med.services', 'ngResource', 'ngMe
                               }
 
                               $state.go("users");
+
                             },
                             function(error){
                                 console.log(error);
@@ -219,6 +251,8 @@ var app = angular.module('med.controllers', ['med.services', 'ngResource', 'ngMe
                        var day = new Date(user.date_ini.getTime());
                        var dayEnd = user.date_end;
 
+                      //si hay alarma
+                       $scope.prepareNotifications();  /*******/
 
                        var selectedDays = $filter('arrayNameDays')(user.days);
 
@@ -232,17 +266,27 @@ var app = angular.module('med.controllers', ['med.services', 'ngResource', 'ngMe
                           if (selectedDays.indexOf(nameDay) > -1){
                               console.log("Es uno de los dias seleccionados "+ nameDay);
 
-
                               for(var i=0; i < user.hours.length; i++){
                                   var hora = user.hours[i];
-                                  var dateTomaString = $filter('date')(day,"yyyy-MM-dd") +" "+ hora;
-                                  var dateToma = new Date(dateTomaString);
+                                  var dateTomaString = $filter('date')(day,"yyyy-MM-dd")+"T"+ hora+":00";
+                                  dateToma = new Date(dateTomaString);
+                                  /*este new date ca un invalid date en ios*/
                                   console.log("Guardado toma "+ dateToma);
 
+                                  alert("toma: "+dateToma);
 
-                                  Tomas.add(user.id, user.name, dateToma).then(
+                                  Tomas.add(user.id, user.name, dateToma, 0).then(
                                     function(res){
-                                      console.log("guardo toma ok ");
+                                       console.log("guardo toma ok ->"+$scope.medId+" "+user.name+" "+dateToma);
+
+
+                                    //  if (alarm == true){
+
+                                             $scope.createNotification(res.insertId); /**************/
+
+                                   //   }
+
+
                                     },
                                     function(error){
                                         console.log(error);
@@ -264,12 +308,6 @@ var app = angular.module('med.controllers', ['med.services', 'ngResource', 'ngMe
                        */
 
                        //var testdate = $filter('date')(user.date_ini,"yyyy-MM-dd") + "T22:00:00";
-                       var testdate = $filter('date')(user.date_ini,"yyyy-MM-dd") + " 22:00:00";
-
-                       var dateN = new Date(testdate);
-                       console.log("testdate "+ dateN);
-
-
                        // '2002-04-26T09:00:00';
 
 
@@ -360,11 +398,11 @@ var app = angular.module('med.controllers', ['med.services', 'ngResource', 'ngMe
 
       $scope.initEditUsers = function(){
 
-          var id = $stateParams.userId;
-          Users.get(id).then(function(user){
+           var id = $stateParams.userId;
+           Users.get(id).then(function(user){
 
 
-          //  alert('dia '+ $filter('date')(user.date_ini, 'YYYY/MM/DD');
+          // alert('dia '+ $filter('date')(user.date_ini, 'YYYY/MM/DD');
 
 
             //$scope.datetestformat = $filter('date')(x,"dd/MM/yyyy");
@@ -374,8 +412,8 @@ var app = angular.module('med.controllers', ['med.services', 'ngResource', 'ngMe
             $scope.user = user;
 
 
-              //Recupera las horas guardadas y las añade al objeto
-              Hours.getByMed(user.id).then(function(res){
+            //Recupera las horas guardadas y las añade al objeto
+             Hours.getByMed(user.id).then(function(res){
                  var hours = [];
                  for(var i = 0; i < res.length; i++){
                    hours.push(res[i].hour);
@@ -384,7 +422,7 @@ var app = angular.module('med.controllers', ['med.services', 'ngResource', 'ngMe
 
                  console.log("hours-> "+JSON.stringify($scope.user));
 
-              });
+            });
 
 
           });
@@ -412,6 +450,11 @@ var app = angular.module('med.controllers', ['med.services', 'ngResource', 'ngMe
               }
             )
           }
+
+
+
+
+
       }
 
 
@@ -460,6 +503,218 @@ var app = angular.module('med.controllers', ['med.services', 'ngResource', 'ngMe
           }
 
       }
+
+
+
+
+      /**** Test Local Notifications *****/
+
+      $scope.getNotifications = function(){
+
+        cordova.plugins.notification.local.getScheduled(function (notifications) {
+            alert(JSON.stringify(notifications));
+        });
+
+      }
+
+      $scope.cancelNotifications = function(){
+
+        var tomas = new Array();
+        for (var i = 1; i < 50; i++) {
+            tomas.push(i);
+        }
+
+        cordova.plugins.notification.local.cancel(tomas, function () {
+              // Notifications were cancelled
+        }, $scope);
+      }
+
+      $scope.notification = function(){
+
+        //Cancela las notificaicones ocn id 1 y 2
+        //cordova.plugins.notification.local.cancel([10, 11]).then(function (result) {
+          // ...
+        //});
+
+        alert("Notification: ");
+
+           cordova.plugins.notification.local.registerPermission(function (granted) {});
+
+
+            var check = 'window.cordova NOT available';
+            if (cordova.plugins.notification.local) {
+                  check = 'window.cordova YES is available';
+
+                  var collectionDate = '2016-03-29T19:52:00';
+
+                  var fecha  =new Date(collectionDate);
+                  //var fecha  =new Date();
+
+                  alert("fecha "+fecha);
+/*
+                  cordova.plugins.notification.local.schedule({
+                    id: 11,
+                    title: "Aviso de toma",
+                    text: "Medicamento XX",
+                    at: fecha,
+                    data: {tomaId: "121221"},
+                    autoClear:  true
+                    //every: "thursday",
+                    //every: 5,
+                    //sound: sound
+                  });
+*/
+
+                  for(var i=1; i<5; i++){
+                      cordova.plugins.notification.local.schedule({
+                        id: i,
+                        title: "Aviso de toma",
+                        text: "Medicamento "+i,
+                        at: fecha,
+                        data: {tomaId: i},
+                        autoClear:  true
+                        //every: "thursday",
+                        //every: 5,
+                        //sound: sound
+                      });
+                  }
+
+
+
+                  cordova.plugins.notification.local.on("click", function (notification) {
+                         alert("toma -> "+ notification.id);
+                         var data = JSON.parse(notification.data);
+                         alert("toma -> "+ data['tomaId']);
+                         $state.go("tomas");
+                  });
+
+
+
+
+
+                /*
+                  var date = document.getElementById('date').value;
+                  var time = document.getElementById('time').value;
+
+                  console.log('date ' + date);
+                  console.log('time ' + time);
+
+                  if(date == "" || time == ""){
+                    alert("Please enter all details");
+                    return;
+                  }
+
+                  var schedule_time = new Date((date + " " + time).replace(/-/g, "/")).getTime();
+                  schedule_time = new Date(schedule_time);
+
+                  var d= new Date();
+                  d.setHours(20);
+                  d.setMinutes(40);
+                  d.setSeconds(0);
+
+
+                  window.cordova.plugins.notification.local.schedule({
+                    id: 1,
+                    text: "Single Notification. jueves 20:40",
+                    //at: schedule_time
+                    at: hoy
+                    //every: "thursday",
+                    //every: 5,
+                    //sound: sound
+                  });
+
+                  if(cordova.plugins.notification.local.getScheduledIds){
+                     console.log("Hay shedules "+cordova.plugins.notification.local.getScheduledIds.length);
+                  }else{
+                    console.log('no hay shedules');
+                  }
+
+
+
+                // An elaborate, custom popup
+                var myPopup = $ionicPopup.show({
+                  template: '<input type="password" ng-model="data.wifi">',
+                  title: 'Check',
+                  subTitle: check,
+                  scope: $scope,
+                  buttons: [
+                    { text: 'Cancel' },
+                  ]
+                });
+
+
+                // Al clicar en la notificación
+                cordova.plugins.notification.local.on("click", function(notification)
+                {
+                    alert("clicked: " + notification.id);
+                });
+            */
+          }
+
+          alert("Notification: " + check);
+      }
+
+
+      // Crea una toma
+      $scope.prepareNotifications = function(){
+
+            cordova.plugins.notification.local.registerPermission(function (granted) {});
+
+            cordova.plugins.notification.local.on("click", function (notification) {
+                   //alert("toma -> "+ notification.id);
+                   var data = JSON.parse(notification.data);
+                   var id = data['tomaId'];
+                   $state.go('toma',{tomaId: id});
+
+                  // enviar a pantalla de toma, según el id
+            });
+
+
+      }
+
+      $scope.createNotification = function(tomaId){
+
+          Tomas.get(tomaId).then(function(toma){
+
+            var date = new Date(toma.date);
+            var hour = $filter('date')(date,"HH:mm");
+
+            if (cordova.plugins.notification.local) {
+
+                  //cordova.plugins.notification.local.registerPermission(function (granted) {});
+
+                  cordova.plugins.notification.local.schedule({
+                    id: tomaId,
+                    title: "Aviso de toma",
+                    text: toma.med_name+" "+hour,
+                    at: date,
+                    data: {tomaId: tomaId},
+                    //autoClear:  true
+
+                  });
+
+/*
+                  cordova.plugins.notification.local.on("click", function (notification) {
+                         alert("toma -> "+ notification.id);
+                         var data = JSON.parse(notification.data);
+                         alert("toma -> "+ data['tomaId']);
+                         $state.go("tomas");
+                        // enviar a pantalla de toma, según el id
+                  });
+*/
+            }
+
+        })
+
+      }
+      /********/
+
+
+
+
+
+
+
 
 
 })
@@ -564,36 +819,33 @@ var app = angular.module('med.controllers', ['med.services', 'ngResource', 'ngMe
 
 
 
+
 app.controller("tomasCtrl", function($scope, Tomas, $state, $stateParams, $filter){
 
   $scope.initTomas = function(){
-
     Tomas.all().then(function(tomas){
       $scope.tomas = tomas;
       console.log(tomas);
     })
   }
 
+  $scope.initToma = function(){
+    var tomaId = $stateParams.tomaId;
+    Tomas.get(tomaId).then(function(toma){
+      $scope.toma = toma;
+    })
+  }
+
+  $scope.tomada = function(tomaId){
+    Tomas.setTomada(tomaId, 1).then(function(toma){
+      $state.go("tomas");
+    })
+  }
+
+
 })
 
-/*
-.directive('dividerCollectionRepeat', function($parse) {
-    return {
-        priority: 1001,
-        compile: compile
-    };
 
-    function compile (element, attr) {
-        var height = attr.itemHeight || '73';
-        attr.$set('itemHeight', 'item.isDivider ? 37 : ' + height);
-
-        element.children().attr('ng-hide', 'item.isDivider');
-        element.prepend(
-            '<div class="item item-divider ng-hide" ng-show="item.isDivider" ng-bind="item.divider"></div>'
-        );
-    }
-})
-*/
 
 .filter('groupByMonthYear', function($parse, $filter) {
     var dividers = {};

@@ -29,6 +29,7 @@ angular.module('med', ['ionic','ngCordova', 'med.controllers', 'med.services', '
       }
 
       $cordovaSQLite.execute(db, "DROP TABLE med");
+      $cordovaSQLite.execute(db, "DROP TABLE hours");
       $cordovaSQLite.execute(db, "DROP TABLE tomas");
       //$cordovaSQLite.execute(db, "CREATE TABLE IF NOT EXISTS users (id integer primary key, name text)");
       //$cordovaSQLite.execute(db, "CREATE TABLE IF NOT EXISTS users (id integer primary key, name text, days text)");
@@ -54,8 +55,13 @@ angular.module('med', ['ionic','ngCordova', 'med.controllers', 'med.services', '
       controller: "usersCtrl",
       cache: false
     })
+    .state("selectMed",{
+      url: "/selectMed",
+      templateUrl: "templates/selectMed.html",
+      controller: "usersCtrl"
+    })
     .state("addUsers",{
-      url: "/users/add",
+      url: "/users/add:catId",
       templateUrl: "templates/add.html",
       controller: "usersCtrl"
     })
@@ -67,8 +73,16 @@ angular.module('med', ['ionic','ngCordova', 'med.controllers', 'med.services', '
     .state("tomas",{
       url: "/tomas",
       templateUrl: "templates/tomas.html",
+      controller: "tomasCtrl",
+      cache: false
+    })
+    .state("toma",{
+      url: "/toma/:tomaId",
+      templateUrl: "templates/toma.html",
       controller: "tomasCtrl"
     })
+
+
 
     $urlRouterProvider.otherwise("/users");
 

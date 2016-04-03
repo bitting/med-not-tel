@@ -29,7 +29,7 @@
 
 				  <div class="item item-divider" ng-show="toma.sep" > {{toma.sep}} </div>
 
-			    <ion-item ng-hide="item.isDivider" class="item">
+			    <ion-item ng-hide="item.isDivider" class="item" href="#/toma/{{toma.id}}">
 
 						<h2>{{toma.med_name}}</h2>
 						<h2>{{toma.date | toDiaNum}}</h2>
@@ -38,6 +38,8 @@
 
             <i class="icon ion-record assertive" ng-show="toma.tomada == 0"> </i>
 						<i class="icon ion-checkmark-circled balanced" ng-show="toma.tomada == 1"> </i>
+
+					  <i class="icon ion-chevron-right icon accesory"></i>
 			    </ion-item>
 
 

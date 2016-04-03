@@ -30,9 +30,28 @@
 		 <div> <a ng-click="openLink()">CLICK</a></div>
 	   -->
 
+
+		  <button class="button button-calm button-block" ui-sref="selectMed">
+						Seleccionar medicamento
+		 </button>
+
 		 <button class="button button-calm button-block" ui-sref="tomas">
 				Tomas
 		 </button>
+
+		 <button class="button button-calm button-block" ng-click="notification()">
+				New notification
+		 </button>
+
+		 <button class="button button-calm button-block" ng-click="getNotifications()">
+				Get notifications
+		 </button>
+
+		 <button class="button button-calm button-block" ng-click="cancelNotifications()">
+				Cancel notifications
+		 </button>
+
+
 
     </ion-content>
 </ion-view>
