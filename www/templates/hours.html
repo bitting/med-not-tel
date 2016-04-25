@@ -1,26 +1,63 @@
-<ion-modal-view ng-init="initHours()">
+<ion-modal-view>
 	<ion-content>
 
 		<ion-header-bar align-title="left" class="bar-positive">
 	    <div class="buttons">
-	      <button class="button button-clear" ng-click="closeHoursForm()">Cerrar</button>
+	      <button class="button button-clear" ng-click="closeHoursForm(user.hours)">Cerrar</button>
 	    </div>
 	  </ion-header-bar>
 		<ion-content>
 
-			<h2>Horas {{user.hours} </h2>
+			<div class="titulo">Horas de las tomas</div>
 
+
+     <!--
+    	<form name="formMed" novalidate="" ng-submit="saveMed(formMed, user)" >
+				<div class="list card" id="newHourCard" ng-show="showNewHourCard">
+          <div class="item item-image item item-text-wrap">
+
+										<label class="item item-input">
+											<span class="input-label">Nueva hora</span>
+											<input type="time" id="hour" name="hour" ng-model="newhour" required> </input>
+										</label>
+										<div class="error-container last-error-container" ng-show="formMed.date_ini.$error && formMed.$submitted" ng-messages="formMed.date_ini.$error">
+													<div ng-message="required">Indica la hora</div>
+										</div>
+
+										<button class="button button-calm button-block" ng-click="saveHour()">
+											Save
+										</button>
+
+										<button ng-click="hideCard()" ng-show="showNewHourCard" class="button button-full button-positive button icon-right">
+												Cancelar
+										</button>
+
+          </div>
+      	</div>
+			</form>
+	  -->
+
+			<button ng-click="openNewHourForm(user)" class="button button-full button-calm button icon-right">
+          Nueva hora
+      </button>
+
+
+   <!--
        <button class="button button-calm button-block" ng-click="addHour()">
           Nueva hora
        </button>
-
-       <ion-list>
-         <ion-item class="item-remove-animate item-icon-right" ng-repeat="hour in user.hours" ng-click="newHour()">
-            <h2>{{hour}}</h2>
-
-
+    -->
+       <ion-list class="list">
+         <ion-item class="item item-icon-right" ng-repeat="hour in user.hours track by $index">
+            <h2>{{hour}}<i class="button icon ion-minus-circled assertive" ng-click="removeHour(hour)"> </i> </h2>
          </ion-item>
        </ion-list>
+
+       <div ng-show="user.hours.length > 0">
+			 	<button ng-click="setHours(user.hours)" class="button button-full button-calm button icon-right">
+				 	Ok
+			 	</button>
+		   </div>
 
 
     </ion-content>

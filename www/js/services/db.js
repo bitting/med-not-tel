@@ -1,4 +1,4 @@
-angular.module("med.services", [])
+var serv = angular.module("med.services", [])
 
 .factory('DBA', function($cordovaSQLite, $q, $ionicPlatform) {
   var self = this;
@@ -44,45 +44,72 @@ angular.module("med.services", [])
 .factory('Users', function($cordovaSQLite, DBA) {
   var self = this;
 
+/*
   self.all = function() {
-    return DBA.query("SELECT id, name, days, date_ini, date_end, alarm FROM med")
+    return DBA.query("SELECT id, name, days, date_ini, date_end, alarm, suspend, units, frequency, hour_ini FROM med")
     .then(function(result){
       return DBA.getAll(result);
     });
   }
+*/
+
+self.all = function() {
+  //return DBA.query("SELECT id, cn, name, dosis, category, pactivo, days, date_ini, date_end, alarm, suspend, units, frequency, hour_ini FROM med")
+  return DBA.query("SELECT id, name, dosis, type_units, suspend, date_end FROM med ORDER BY suspend ASC, date_end DESC")
+  .then(function(result){
+    return DBA.getAll(result);
+  });
+}
+
+ /*
+  self.get = function(medId) {
+    var parameters = [medId];
+    return DBA.query("SELECT id, name, days, date_ini, date_end, alarm, suspend, units  frequency, hour_ini FROM med WHERE id = (?)", parameters)
+    .then(function(result) {
+      return DBA.getById(result);
+    });
+  }
+  */
 
   self.get = function(medId) {
     var parameters = [medId];
-
-    return DBA.query("SELECT id, name, days, date_ini, date_end, alarm FROM med WHERE id = (?)", parameters)
-    //return DBA.query("SELECT id, name, days, date_ini, date_end FROM med WHERE id = (?)", parameters)
+    return DBA.query("SELECT id, cn, name, dosis, category, type_units, pactivo, instructions, date_ini, date_end, alarm, suspend, units, frequency, hour_ini, clave FROM med WHERE id = (?)", parameters)
     .then(function(result) {
       return DBA.getById(result);
     });
   }
 
+/*
   self.add = function(med) {
-    var parameters = [med.name, med.days, med.date_ini, med.date_end, med.alarm];
-
-    //return DBA.query("INSERT INTO med (name, days, date_ini, date_end) VALUES (?, ?, strftime('$s', ?), strftime('$s', ?))", parameters);
-    return DBA.query("INSERT INTO med (name, days, date_ini, date_end, alarm) VALUES (?, ?, ?, ?, ?)", parameters);
+    var parameters = [med.name, med.days, med.date_ini, med.date_end, med.alarm, med.suspend, med.units, med.frequency, med.hour_ini];
+    return DBA.query("INSERT INTO med (name, days, date_ini, date_end, alarm, suspend, units, frequency, hour_ini) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ? )", parameters);
   }
+*/
 
+self.add = function(med, date_ini, date_end, hour_ini) {
+  var parameters = [med.cn, med.name, med.dosis, med.category, med.type_units, med.pactivo, med.instructions, date_ini, date_end, med.alarm, med.suspend, med.units.id, med.frequency.id, hour_ini, med.clave.id];
+  return DBA.query("INSERT INTO med (cn, name, dosis, category, type_units, pactivo, instructions, date_ini, date_end, alarm, suspend, units, frequency, hour_ini, clave) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", parameters);
+}
 
   self.remove = function(medId) {
     var parameters = [medId];
     return DBA.query("DELETE FROM med WHERE id = (?)", parameters);
   }
 
-  self.update = function(editMed) {
-    var parameters = [editMed.name, editMed.days, editMed.date_ini, editMed.date_end, editMed.alarm, editMed.id];
-    return DBA.query("UPDATE med SET name = (?), days = (?), date_ini = (?), date_end = (?), alarm = (?) WHERE id = (?)", parameters);
+  self.updateSuspend = function(editMed) {
+    var parameters = [editMed.suspend, editMed.id];
+    return DBA.query("UPDATE med SET suspend = (?) WHERE id = (?)", parameters);
+  }
+
+  self.update = function(med, date_end, hour_ini) {
+    var parameters = [med.instructions, date_end, med.alarm,  med.units.id, med.frequency.id, hour_ini, med.clave.id, med.id];
+    return DBA.query("UPDATE med SET instructions = (?), date_end = (?), alarm = (?), units = (?), frequency = (?), hour_ini = (?), clave = (?) WHERE id = (?)", parameters);
   }
 
   return self;
 })
 
-
+/*
 .factory('Hours', function($cordovaSQLite, DBA) {
   var self = this;
 
@@ -127,7 +154,7 @@ angular.module("med.services", [])
 
   return self;
 })
-
+*/
 
 .factory('Tomas', function($cordovaSQLite, DBA) {
   var self = this;
@@ -139,25 +166,56 @@ angular.module("med.services", [])
     });
   }
 
+  self.allGroupDay = function() {
+    return DBA.query("SELECT count(id) as ids, sum(tomada) as tomadas, strftime('%Y-%m-%d', date) as fecha FROM tomas where date < date('now') GROUP BY strftime('%Y-%m-%d', date) ORDER BY date desc")
+    .then(function(result) {
+        return DBA.getAll(result);
+    });
+  }
+
   self.getByMed = function(medId) {
     var parameters = [medId];
-    return DBA.query("SELECT id, med_id, dmed_name, date, tomada FROM tomas WHERE med_id = (?)", parameters)
+    return DBA.query("SELECT id, med_id, med_name, date, tomada FROM tomas WHERE med_id = (?)", parameters)
     .then(function(result) {
       return DBA.getAll(result);
     });
   }
 
-/*
-  Fecha hoy con 00:00:00
-  Buscar fecha entre fecha de hoy y fecha +1
-  self.getByDay = function(date) {
-    var parameters = [date];
-    return DBA.query("SELECT id, med_id, med_name, date FROM tomas WHERE date = (?)", parameters)
+  self.getLastByMed = function(medId) {
+    var parameters = [medId];
+    return DBA.query("SELECT id, med_id, med_name, date, tomada FROM tomas WHERE med_id = (?) ORDER BY id DESC LIMIT 1", parameters)
     .then(function(result) {
       return DBA.getAll(result);
     });
   }
-*/
+
+  self.getByMedFromDate = function(medId, date) {
+    var parameters = [medId, date];
+    return DBA.query("SELECT id, med_id, med_name, date, tomada FROM tomas WHERE med_id = (?) AND date > (?)", parameters)
+    .then(function(result) {
+      return DBA.getAll(result);
+    });
+  }
+
+  self.getByMedFromNow = function(medId) {
+      var parameters = [medId];
+      return DBA.query("SELECT id, med_id, med_name, date, tomada FROM tomas WHERE med_id = (?) AND date > Date('now')", parameters)
+      .then(function(result) {
+        return DBA.getAll(result);
+      });
+    }
+
+  /*
+    Fecha hoy con 00:00:00
+    Buscar fecha entre fecha de hoy y fecha +1*/
+    self.getByDay = function(dateIni, dateEnd) {
+      var parameters = [dateIni, dateEnd];
+      console.log(parameters);
+      return DBA.query("SELECT id, med_id, med_name, date FROM tomas WHERE date >= (?) and date <= (?)", parameters)
+      .then(function(result) {
+        return DBA.getAll(result);
+      });
+    }
 
   self.get = function(tomaId) {
     var parameters = [tomaId];
@@ -167,15 +225,19 @@ angular.module("med.services", [])
     });
   }
 
-  self.add = function(med_id, med_name, date, tomada) {
-    var parameters = [med_id, med_name, date, tomada];
-    console.log("db guarda toma dia "+date);
+  self.add = function(med_id, med_name, date, dateString, tomada) {
+    var parameters = [med_id, med_name, dateString, tomada];
     return DBA.query("INSERT INTO tomas (med_id, med_name, date, tomada) VALUES (?,?,?,?)", parameters);
   }
 
   self.remove = function(tomaId) {
     var parameters = [tomaId];
     return DBA.query("DELETE FROM tomas WHERE id = (?)", parameters);
+  }
+
+  self.removeByMed = function(medId) {
+    var parameters = [medId];
+    return DBA.query("DELETE FROM tomas WHERE med_id = (?)", parameters);
   }
 
   self.update = function(editToma) {

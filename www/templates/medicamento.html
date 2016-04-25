@@ -1,0 +1,104 @@
+<ion-view title="Medicamento" ng-init="initMed()">
+	<ion-content>
+
+		<div class="card">
+			<div class="item item-divider">
+				{{user.name}}
+			</div>
+			<div class="item item-text-wrap">
+			  {{user.type_units | capitalize}} - {{user.dosis}} <br />
+				<span >Principio activo: {{user.pactivo }} </span>
+			</div>
+		</div>
+
+ 	 	<div class="list">
+			<div class="item item-input">
+
+			 	<div>{{user.instructions}}</div>
+		  	</div>
+
+		 		<div class="item item-input">
+			 		<label>
+						<span class="input-label">Fecha inicio</span>
+			 		</label>
+			 		<div>{{user.date_ini | date:'dd/MM/yyyy'}}</div>
+		 		</div>
+
+		 		<div class="item item-input">
+			 		<label>
+						<span class="input-label">Fecha fin</span>
+			 		</label>
+			 		<div>{{user.date_end | date:'dd/MM/yyyy'}}</div>
+		 		</div>
+
+	 		<div class="item item-input">
+		 		<label>
+					<span class="input-label">Unidades</span>
+		 		</label>
+		 		<div>{{user.units.label}}</div>
+	 		</div>
+
+	 		<div class="item item-input">
+		 		<label>
+					<span class="input-label">Periodicidad</span>
+		 		</label>
+		 		<div>{{user.frequency.label}}</div>
+	 		</div>
+
+	  	<div class="item item-input">
+	 	  	<label>
+				 	<span class="input-label">Hora inicio</span>
+		  	</label>
+		  	<div>{{user.hour_ini | date:'HH:mm'}}</div>
+	  	</div>
+
+			<div class="item item-input" ng-show="showclave" >
+		 		<label>
+					<span class="input-label">Clave educativa</span>
+		 		</label>
+		 		<div>{{user.clave.label}}</div>
+	 		</div>
+
+		 	<div class="item item-input">
+			 	<label>
+					<span class="input-label">Avisos</span>
+			 	</label>
+			 	<div>{{user.alarm ? 'Si' : 'No'}}</div>
+			</div>
+ 	 </div>
+
+<!--
+		<button ng-show="!user.suspend" class="button button-calm button-block" ng-click="editMed(user.id)">
+			Editar
+		</button>
+		<button ng-show="!user.suspend" class="button button-calm button-block" ng-click="suspendMed(user)">
+			Suspender
+		</button>
+		<button class="button button-calm button-block" ng-click="deleteMed(user)">
+			Eliminar
+		</button>
+-->
+
+  </ion-content>
+
+	<ion-footer-bar class="footer-buttons">
+		<div class="row">
+			<div class="col" ng-show="!user.suspend">
+				<button class="button button-calm button-block" ui-sref="home.editMedicamento({ userId: user.id })">
+					Editar
+				</button>
+			</div>
+			<div class="col" ng-show="!user.suspend">
+				<button class="button button-calm button-block" ng-click="suspendMed(user)">
+					Suspender
+				</button>
+			</div>
+			<div class="col">
+				<button class="button button-calm button-block" ng-click="deleteMed(user)">
+					Eliminar
+				</button>
+			</div>
+		</div>
+ </ion-footer-bar>
+
+</ion-view>

@@ -28,14 +28,22 @@ angular.module('med', ['ionic','ngCordova', 'med.controllers', 'med.services', '
           db = window.openDatabase("med.db", "1.0", "Med", -1);
       }
 
+ /*
       $cordovaSQLite.execute(db, "DROP TABLE med");
       $cordovaSQLite.execute(db, "DROP TABLE hours");
       $cordovaSQLite.execute(db, "DROP TABLE tomas");
-      //$cordovaSQLite.execute(db, "CREATE TABLE IF NOT EXISTS users (id integer primary key, name text)");
-      //$cordovaSQLite.execute(db, "CREATE TABLE IF NOT EXISTS users (id integer primary key, name text, days text)");
-      $cordovaSQLite.execute(db, "CREATE TABLE IF NOT EXISTS med (id integer primary key, name text, days text, date_ini datetime, date_end datetime, alarm INTEGER DEFAULT 0)");
+      $cordovaSQLite.execute(db, "CREATE TABLE IF NOT EXISTS med (id integer primary key, name text, days text, date_ini datetime, date_end datetime, alarm INTEGER DEFAULT 0, suspend INTEGER DEFAULT 0, units integer, frequency INTEGER, hour_ini datetime)");
       $cordovaSQLite.execute(db, "CREATE TABLE IF NOT EXISTS hours (id integer primary key, med_id integer, hour text)");
       $cordovaSQLite.execute(db, "CREATE TABLE IF NOT EXISTS tomas (id integer primary key, med_id integer, med_name text, date date, tomada INTEGER DEFAULT 0)");
+*/
+
+      //$cordovaSQLite.execute(db, "DROP TABLE med");
+      //$cordovaSQLite.execute(db, "DROP TABLE tomas");
+      //$cordovaSQLite.execute(db, "DROP TABLE config");
+      $cordovaSQLite.execute(db, "CREATE TABLE IF NOT EXISTS config (avatar text default 'p1')");
+      $cordovaSQLite.execute(db, "CREATE TABLE IF NOT EXISTS med (id integer primary key, cn text, name text, dosis text, category text, type_units text, pactivo text,instructions text, date_ini datetime, date_end datetime, alarm INTEGER DEFAULT 0, suspend INTEGER DEFAULT 0, units integer, frequency INTEGER, hour_ini datetime, clave text)");
+      $cordovaSQLite.execute(db, "CREATE TABLE IF NOT EXISTS tomas (id integer primary key, med_id integer, med_name text, date date, tomada INTEGER DEFAULT 0)");
+
 
   });
 })
@@ -47,7 +55,7 @@ angular.module('med', ['ionic','ngCordova', 'med.controllers', 'med.services', '
   delete $httpProvider.defaults.headers.common["X-Request-Width"];
   $httpProvider.defaults.headers.post["Content-type"] = "application/x-www-form-urlencoded charset=UTF-8";
 
-
+/*
   $stateProvider
     .state("users",{
       url: "/users",
@@ -65,8 +73,14 @@ angular.module('med', ['ionic','ngCordova', 'med.controllers', 'med.services', '
       templateUrl: "templates/add.html",
       controller: "usersCtrl"
     })
-    .state("editUsers",{
-      url: "/users/:userId",
+    .state("medicamento",{
+      url: "/users/medicamento/:userId",
+      templateUrl: "templates/medicamento.html",
+      controller: "usersCtrl"
+    })
+
+    .state("editMed",{
+      url: "/users/edit/:userId",
       templateUrl: "templates/edit.html",
       controller: "usersCtrl"
     })
@@ -82,9 +96,129 @@ angular.module('med', ['ionic','ngCordova', 'med.controllers', 'med.services', '
       controller: "tomasCtrl"
     })
 
+*/
+  $stateProvider
+    .state("home", {
+        url: "/home",
+        abstract: true,
+        cache: false,
+        templateUrl: "templates/home.html",
+        controller: "homeCtrl"
+    })
+    .state('home.inicio', {
+        url: '/inicio',
+        cache: false,
+        views: {
+            'menuContent': {
+                templateUrl: 'templates/inicio.html',
+                controller: 'homeCtrl'
+            }
+        }
+    })
+    .state("home.avatar", {
+        url: "/avatar",
+        views: {
+            'menuContent': {
+                templateUrl: "templates/avatar.html",
+                controller: "homeCtrl"
+            }
+        }
+    })
+    .state("home.medicinas",{
+      url: "/medicinas",
+      cache: false,
+      views: {
+        'menuContent': {
+          templateUrl: "templates/medicinas.html",
+          controller: 'medicinasCtrl',
+        }
+      }
+    })
+    .state("home.editMedicamento", {
+        url: "/editMedicamento:userId",
+        views: {
+            'menuContent': {
+                templateUrl: 'templates/edit.html',
+                controller: 'medicinasCtrl'
+            }
+        }
+    })
+    .state("home.medicamento", {
+        url: '/medicamento/:userId',
+        views: {
+            'menuContent': {
+                templateUrl: 'templates/medicamento.html',
+                controller: 'medicinasCtrl'
+            }
+        }
+    })
+    .state("home.tomas",{
+      url: "/tomas",
+      cache: false,
+      views: {
+        'menuContent': {
+          templateUrl: "templates/tomas.html",
+          controller: 'tomasCtrl'
+        }
+      }
+    })
+    .state("home.tomaok", {
+        url: "/tomaok",
+        cache: false,
+        views: {
+            'menuContent': {
+                templateUrl: 'templates/tomaok.html',
+                controller: 'tomasCtrl'
+            }
+        }
+    })
+    .state("home.seguimiento", {
+        url: "/seguimiento",
+        views: {
+            'menuContent': {
+                templateUrl: 'templates/seguimiento.html',
+                controller: 'seguimientoCtrl'
+            }
+        }
+    })
+    .state("home.telecumple", {
+        url: "/telecumple",
+        views: {
+            'menuContent': {
+                templateUrl: 'templates/telecumple.html'
+            }
+        }
+    })
+    .state('home.addUser', {
+        url: '/addUser/:medId',
+        views: {
+            'menuContent': {
+                templateUrl: 'templates/add.html',
+                controller: 'medicinasCtrl'
+            }
+        }
+    })
+    .state('home.categorias', {
+      url: '/categorias',
+      views: {
+          'menuContent': {
+              templateUrl: 'templates/categorias.html',
+              controller: 'medicinasCtrl'
+          }
+      }
+  })
+  .state('home.medicamentos', {
+      url: '/medicamentos/:catId',
+      views: {
+          'menuContent': {
+              templateUrl: 'templates/medicamentos.html',
+              controller: 'medicinasCtrl'
+          }
+      }
+  });
 
 
-    $urlRouterProvider.otherwise("/users");
+  $urlRouterProvider.otherwise("/home/inicio");
 
 
 

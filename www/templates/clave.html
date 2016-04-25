@@ -1,0 +1,19 @@
+<ion-modal-view>
+  <ion-header-bar align-title="left" class="bar-positive">
+    <div class="buttons">
+      <button class="button button-clear" ng-click="closeClaveForm()">Cerrar</button>
+    </div>
+  </ion-header-bar>
+	<ion-content>
+
+       <h3>Clave educativa</h3>
+
+        <ion-list>
+            <ion-item ng-repeat="claveItem in clave" ng-click="setClave(claveItem)">
+               {{claveItem.label}}
+            </ion-item>
+
+        </ion-list>
+
+  </ion-content>
+</ion-modal-view>
